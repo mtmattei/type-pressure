@@ -25,7 +25,9 @@ public sealed partial class MainPage : Page
         _demoExitTimer.Tick+=(_,_)=>{_demoExitTimer.Stop();if(!_exitHovered)DemoExitButton.Visibility=Visibility.Collapsed;};
         _ready=true;
         Chamber.Updated+=UpdateStatus; Chamber.DoubleTapped+=(_,_)=>{if(Chamber.Simulation.Demo)SetDemo(false);};
-        Loaded+=(_,_)=>{Focus(FocusState.Programmatic);SyncControls();if(App.PortraitDemo){SetDemo(true);Chamber.Simulation.Paused=true;}};
+        Chamber.Tapped+=(_,_)=>RevealDemoExit();
+        Loaded+=(_,_)=>{Focus(FocusState.Programmatic);SyncControls();Windows.UI.Core.SystemNavigationManager.GetForCurrentView().BackRequested+=OnBackRequested;if(App.PortraitDemo){SetDemo(true);Chamber.Simulation.Paused=true;}};
+        Unloaded+=(_,_)=>{Windows.UI.Core.SystemNavigationManager.GetForCurrentView().BackRequested-=OnBackRequested;_demoExitTimer.Stop();};
         Chamber.PointerPressed+=(_,_)=>{if(FocusManager.GetFocusedElement(XamlRoot!) is not TextBox)Focus(FocusState.Programmatic);};
         try { Chamber.Simulation.Paused=!new Windows.UI.ViewManagement.UISettings().AnimationsEnabled; } catch { }
     }
@@ -88,6 +90,10 @@ public sealed partial class MainPage : Page
     }
     private void DemoClick(object sender,RoutedEventArgs e)=>SetDemo(!Chamber.Simulation.Demo);
     private void ExitDemoClick(object sender,RoutedEventArgs e)=>SetDemo(false);
+    private void OnBackRequested(object? sender,Windows.UI.Core.BackRequestedEventArgs e)
+    {
+        if(Chamber.Simulation.Demo){SetDemo(false);e.Handled=true;}
+    }
     private void RevealDemoExit()
     {
         if(!Chamber.Simulation.Demo || App.PortraitDemo)return;
@@ -105,18 +111,15 @@ public sealed partial class MainPage : Page
     {
         if(Chamber.Simulation.Demo==enabled)return;
         if(enabled){_wasPaused=Chamber.Simulation.Paused;_wasFullscreen=App.MainWindow!.AppWindow.Presenter.Kind==AppWindowPresenterKind.FullScreen;Chamber.Simulation.Paused=false;if(!App.PortraitDemo)App.MainWindow.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);}
-        else{Chamber.Simulation.Paused=_wasPaused;if(!_wasFullscreen && !App.PortraitDemo)App.MainWindow!.AppWindow.SetPresenter(AppWindowPresenterKind.Overlapped);}
+        else{Chamber.Simulation.Paused=_wasPaused;if(!_wasFullscreen && !App.PortraitDemo)App.MainWindow!.AppWindow.SetPresenter(AppWindowPresenterKind.Default);}
         var visibility=enabled?Visibility.Collapsed:Visibility.Visible;
         Header.Visibility=ControlDeck.Visibility=StatusBar.Visibility=ExperimentsBar.Visibility=visibility;
-        Root.RowDefinitions[0].Height=new GridLength(enabled?0:98);
-        Root.RowDefinitions[2].Height=new GridLength(enabled?0:136);
-        Root.RowDefinitions[3].Height=new GridLength(enabled?0:40);
         ToastHost.Visibility=Visibility.Collapsed;Chamber.BeginDemo(enabled);App.MainWindow!.Activate();DispatcherQueue.TryEnqueue(()=>Focus(FocusState.Programmatic));
-        if(enabled && !App.PortraitDemo){RevealDemoExit();ShowToast("Double-click anywhere to exit · Esc also returns",4000);}
+        if(enabled && !App.PortraitDemo){RevealDemoExit();ShowToast("Double-tap or double-click to exit · Back / Esc also returns",4000);}
         else{_demoExitTimer.Stop();DemoExitButton.Visibility=Visibility.Collapsed;_exitHovered=false;}
     }
     private void FullscreenClick(object sender,RoutedEventArgs e)=>ToggleFullscreen();
-    private static void ToggleFullscreen(){var window=App.MainWindow!.AppWindow;window.SetPresenter(window.Presenter.Kind==AppWindowPresenterKind.FullScreen?AppWindowPresenterKind.Overlapped:AppWindowPresenterKind.FullScreen);}
+    private static void ToggleFullscreen(){var window=App.MainWindow!.AppWindow;window.SetPresenter(window.Presenter.Kind==AppWindowPresenterKind.FullScreen?AppWindowPresenterKind.Default:AppWindowPresenterKind.FullScreen);}
     private void OnKeyDown(object sender,KeyRoutedEventArgs e)
     {
         if(!_ready||_dialogOpen)return;
@@ -148,7 +151,9 @@ public sealed partial class MainPage : Page
             var bytes=Chamber.Export(svg);
             var picker=new FileSavePicker{SuggestedStartLocation=PickerLocationId.PicturesLibrary,SuggestedFileName="Type Pressure"};
             picker.FileTypeChoices.Add(svg?"SVG vector specimen":"PNG specimen",new List<string>{svg?".svg":".png"});
+#if !__ANDROID__
             WinRT.Interop.InitializeWithWindow.Initialize(picker,WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow!));
+#endif
             var file=await picker.PickSaveFileAsync();
             if(file is not null){await FileIO.WriteBytesAsync(file,bytes);ShowToast("Specimen saved. A little pressure, preserved.");}
         }
@@ -160,7 +165,7 @@ public sealed partial class MainPage : Page
         var wasPaused=Chamber.Simulation.Paused;Chamber.Simulation.Paused=true;_dialogOpen=true;
         try
         {
-            var dialog=new ContentDialog{XamlRoot=XamlRoot,Title="Type has a wild side.",CloseButtonText="Let’s put type under pressure",Content="Hold + drag to inflate letters and pull a current.\n\nPull the side handles to squeeze the chamber.\n\nAdd a force, then drag its orange marker. F cycles through fields; arrow keys move the selected field; Delete removes it.\n\nSpace freezes time. R resets the chamber. F11 toggles fullscreen.\n\nD opens Demo mode: seven looping, text-only sequences, including Specimen Storm. Double-click or Escape brings the controls back.\n\nRoboto Flex and Anybody are bundled under the SIL Open Font License. Anybody supports weight and width; its slant control rests."};
+            var dialog=new ContentDialog{XamlRoot=XamlRoot,Title="Type has a wild side.",CloseButtonText="Let’s put type under pressure",Content="Hold + drag to inflate letters and pull a current.\n\nPull the side handles to squeeze the chamber.\n\nAdd a force, then drag its orange marker. F cycles through fields; arrow keys move the selected field; Delete removes it.\n\nSpace freezes time. R resets the chamber. F11 toggles fullscreen.\n\nD opens Demo mode: seven looping, text-only sequences, including Specimen Storm. Double-tap, double-click, Back, or Escape brings the controls back. Tap once to reveal the exit button.\n\nRoboto Flex and Anybody are bundled under the SIL Open Font License. Anybody supports weight and width; its slant control rests."};
             await dialog.ShowAsync();
         }
         finally{Chamber.Simulation.Paused=wasPaused;_dialogOpen=false;}

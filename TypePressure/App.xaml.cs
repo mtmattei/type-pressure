@@ -21,6 +21,7 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         MainWindow = new Window();
+#if !__ANDROID__
         MainWindow.Title = PortraitDemo ? "Type Pressure — Portrait Demo" : "Type Pressure";
         if (PortraitDemo && MainWindow.AppWindow.Presenter is Microsoft.UI.Windowing.OverlappedPresenter presenter)
         {
@@ -30,6 +31,7 @@ public partial class App : Application
         }
         MainWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32 { Width = PortraitDemo ? 630 : 1440, Height = PortraitDemo ? 1120 : 960 });
         if (PortraitDemo) MainWindow.AppWindow.Move(new Windows.Graphics.PointInt32 { X = 100, Y = 30 });
+#endif
 #if DEBUG
         if (!PortraitDemo) MainWindow.UseStudio();
 #endif
@@ -56,7 +58,9 @@ public partial class App : Application
             rootFrame.Navigate(typeof(MainPage), args.Arguments);
         }
 
+#if !__ANDROID__
         MainWindow.SetWindowIcon();
+#endif
         // Ensure the current window is active
         MainWindow.Activate();
     }

@@ -1,4 +1,4 @@
-# Type Pressure — Uno desktop
+# Type Pressure — Uno desktop and Android
 
 A native Uno Platform / XAML typography experiment. The exhibition canvas is drawn with Skia, using the original OpenType variation data from Roboto Flex and Anybody.
 
@@ -9,9 +9,26 @@ Install the .NET 10 SDK, then open `Launch Type Pressure.cmd` on Windows. The la
 For development, open `TypePressure.sln`, or run these commands from the `TypePressure` project folder with .NET 10 installed:
 
 ```powershell
-dotnet build -f net10.0-desktop
-dotnet run -f net10.0-desktop
+dotnet build -f net10.0-desktop -p:TargetFrameworks=net10.0-desktop
+dotnet run -f net10.0-desktop -p:TargetFrameworks=net10.0-desktop
 ```
+
+The framework override lets you develop the desktop app without installing the Android toolchain.
+
+### Android
+
+Install the .NET 10 SDK with the Android workload (`dotnet workload install android`), Android SDK Platform 36 / Build Tools 36, and JDK 21. Uno's [Windows setup guide](https://platform.uno/docs/articles/get-started-vs.html) and `uno-check` can help configure the toolchain.
+
+From the `TypePressure` project folder:
+
+```powershell
+dotnet build -f net10.0-android
+dotnet run -f net10.0-android
+```
+
+Start an Android emulator or connect an Android device with USB debugging before running. You can also select the Android target and a device in your IDE. The application ID is `studio.typepressure.android`; Android 5.0 (API 21) and newer are supported. Signing credentials are not bundled; configure your own signing key for distribution.
+
+The Android app uses the same native Skia canvas, variable-font data, force simulation, and seven-scene demo as desktop. Narrow windows use a scrollable control deck and experiment picker. Controls respect system bars and the on-screen keyboard. Tap Demo for the text-only loop; double-tap or use Android Back to return, or tap once to reveal the exit button. The exit hint disappears automatically. PNG and SVG export use Android's document picker.
 
 ## Play
 
@@ -26,7 +43,8 @@ dotnet run -f net10.0-desktop
 | --- | --- |
 | D | Enter the full-screen, text-only demo |
 | Escape | Exit demo / exit fullscreen |
-| Double-click the demo | Exit demo |
+| Double-click / double-tap the demo | Exit demo |
+| Android Back | Exit demo |
 | Space | Freeze / resume |
 | R | Reset the current chamber |
 | F11 | Toggle fullscreen |
@@ -72,6 +90,6 @@ dotnet bin/Debug/net10.0-desktop/TypePressure.dll --self-test
 
 The regression check compares 48 native font instances, including accented composite glyphs, against independent FontTools instances. Maximum observed coordinate difference: 0.503 font units, within rounding tolerance. It also checks freeze behavior and two complete demo loops for valid axis ranges.
 
-Windows desktop is the built and tested target. The project uses Uno's desktop host configuration for Windows, macOS, and Linux; macOS and Linux have not been run in this workspace.
+Windows desktop and the shared portrait layout have been run in this workspace. Android is a native target with its own application, activity, manifest, and splash resources. macOS and Linux use Uno's desktop host configuration and have not been run here.
 
 Font sources: [Roboto Flex](https://github.com/google/fonts/tree/main/ofl/robotoflex), [Anybody](https://github.com/google/fonts/tree/main/ofl/anybody). Both use the SIL Open Font License; see `TypePressure/Assets/Fonts`.

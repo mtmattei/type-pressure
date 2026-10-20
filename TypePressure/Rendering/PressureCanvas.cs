@@ -99,10 +99,13 @@ public sealed class PressureCanvas : SKCanvasElement
         var caption=Simulation.Mode switch{Experiment.Breathing=>("A little room to breathe.","Hold anywhere. See what gives."),Experiment.Tug=>("Two forces. One word.","Drag the markers to take a side."),Experiment.Aftershock=>("Every touch leaves an impression.","Click to send a wave through the type."),_=>("A hundred little changes.","One beautifully unstable system.")};
         Text(canvas,caption.Item1,36,height-59,12,Ink);Text(canvas,caption.Item2,36,height-40,12,Ink);
         if(width>1000){paint.Style=SKPaintStyle.Stroke;paint.Color=Accent;canvas.DrawCircle(width/2-85,height-58,18,paint);paint.Style=SKPaintStyle.Fill;Text(canvas,"+",width/2-91,height-52,20,Accent);Text(canvas,"Type is a material.",width/2-55,height-64,11,Muted);Text(canvas,"Put it under pressure.",width/2-55,height-47,11,Ink);}
+        if(width>=600)
+        {
         Text(canvas,"CHAMBER PRESSURE",width-205,height-83,9,Muted,true);
         var pressure=1+Simulation.Pressure*.7+Simulation.Squeeze*.6;
         Text(canvas,pressure.ToString("F2"),width-205,height-40,28,Ink,true);Text(canvas,"atm",width-129,height-42,10,Muted,true);
         for(var i=0;i<12;i++){paint.Color=i<2+(pressure-1)*8?Accent:Line;canvas.DrawRect(width-102+i*5,height-65,3,25,paint);}
+        }
         if(Simulation.Paused)Text(canvas,"TIME, HELD STILL.",width/2-65,height-108,10,Muted,true);
     }
     private void Text(SKCanvas canvas,string text,float x,float y,float size,SKColor color,bool mono=false)
@@ -110,7 +113,7 @@ public sealed class PressureCanvas : SKCanvasElement
     private void OnPressed(object sender,PointerRoutedEventArgs e)
     {
         if(Simulation.Demo)return;var p=e.GetCurrentPoint(this);var x=(float)p.Position.X;var y=(float)p.Position.Y;
-        if(!p.Properties.IsLeftButtonPressed)return;
+        if(e.Pointer.PointerDeviceType==Microsoft.UI.Input.PointerDeviceType.Mouse&&!p.Properties.IsLeftButtonPressed)return;
         CapturePointer(e.Pointer);e.Handled=true;
         _drag=Simulation.Fields.LastOrDefault(f=>Math.Pow(f.X*ActualWidth-x,2)+Math.Pow(f.Y*ActualHeight-y,2)<34*34);
         if(_drag is not null){Simulation.Selected=_drag.Id;Invalidate();return;}
