@@ -60,7 +60,9 @@ From this folder, run `dotnet run --project tools/VideoExport -c Release -- <fra
 
 Uno 6's SkiaSharp 3 package does not expose variable-font cloning. To retain real axis changes, `tools/prepare-fonts.py` extracts the fonts' gvar tuples with FontTools, resolves IUP interpolation, and pins the unused custom axes. The app evaluates weight, width, and slant continuously in C#; it does not horizontally stretch glyphs or use a browser. Roboto Flex's optical size is pinned at 144 for this display use.
 
-Both font families and their licenses are bundled. Font data includes their complete character maps; characters outside a selected font's coverage display its missing-glyph symbol. Text is treated as individual glyphs for the experiment, rather than as a multilingual shaped paragraph.
+Runtime data for both font families and their licenses is bundled. Font data includes their complete character maps; characters outside a selected font's coverage display its missing-glyph symbol. Text is treated as individual glyphs for the experiment, rather than as a multilingual shaped paragraph.
+
+The original TTF source files are optional and are not required to build or run the app. To regenerate the bundled data, download the upright variable fonts from the Google Fonts links below, save them as `TypePressure/Assets/Fonts/RobotoFlex.ttf` and `Anybody.ttf`, install Python's `fonttools` package, and run `python tools/prepare-fonts.py`.
 
 ## Validation
 

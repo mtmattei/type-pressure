@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="3.119.2" />
+    <Compile Include="../../TypePressure/Rendering/VariableFont.cs" Link="VariableFont.cs" />
+    <Compile Include="../../TypePressure/Rendering/PressureSimulation.cs" Link="PressureSimulation.cs" />
+    <Compile Include="../../TypePressure/Rendering/DemoRenderer.cs" Link="DemoRenderer.cs" />
+    <Compile Include="../../TypePressure/Rendering/FontRegression.cs" Link="FontRegression.cs" />
+    <EmbeddedResource Include="../../TypePressure/Assets/Fonts/*.json.gz" />
+    <EmbeddedResource Include="../../TypePressure/Assets/Fonts/*.checks.json" />
+  </ItemGroup>
+</Project>

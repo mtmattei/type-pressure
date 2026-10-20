@@ -1,0 +1,41 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-desktop</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+
+    <!-- Display name -->
+    <ApplicationTitle>Type Pressure</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>studio.typepressure.desktop</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>TypePressure</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>A native pressure chamber for variable typography.</Description>
+
+    <!--
+      UnoFeatures are used to quickly add and manage features enabled for your app.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+      SkiaRenderer;
+    </UnoFeatures>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Portable'">
+    <OutputType>WinExe</OutputType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Fonts\*.json.gz" />
+    <EmbeddedResource Include="Assets\Fonts\*.checks.json" />
+  </ItemGroup>
+
+</Project>
